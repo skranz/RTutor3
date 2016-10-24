@@ -41,10 +41,10 @@ rtutor.parse.task.chunk  = function(bi,ps,args, opts=ps$opts) {
   }
   
   # Collapse, since txt from aceEditor is also collapsed
-  head = ps$txt[br$start]
-  tail = ps$txt[br$end]
-  ck$shown.txt = paste0(c(head,ck$shown.txt,tail), collapse="\n")
-  ck$sol.txt = paste0(c(head,ck$sol.txt,tail), collapse="\n")
+  #head = ps$txt[br$start]
+  #tail = ps$txt[br$end]
+  #ck$shown.txt = paste0(c(head,ck$shown.txt,tail), collapse="\n")
+  #ck$sol.txt = paste0(c(head,ck$sol.txt,tail), collapse="\n")
   
   # add tests and hints
   add.chunk.tests.and.hints(ck)
@@ -141,10 +141,10 @@ add.chunk.block = function(ck,type,str, add.enter.code.here=FALSE,cbi, bi,ps) {
     if (add.enter.code.here) {
       ck$shown.txt = c("\n# enter your code here ...\n", ck$shown.txt)  
     }
-    ck$sol.txt = c(ck$sol.txt,btxt)
+    ck$sol.txt = paste0(c(ck$sol.txt,btxt),collapse="\n")
   } else if (type=="show" | type == "show_notest") {
-    ck$shown.txt = c(ck$shown.txt,btxt)
-    ck$sol.txt = c(ck$sol.txt,btxt)
+    ck$shown.txt = paste0(c(ck$shown.txt,btxt),collapse="\n")
+    ck$sol.txt = paste0(c(ck$sol.txt,btxt),collapse="\n")
   }
   
   # add expressions  

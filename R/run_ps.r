@@ -2,11 +2,12 @@
 
 examples.frame.ps = function() {
   setwd("D:/libraries/RTutor3")
-  ps = create.ps(file="ex1.rmd", catch.errors=FALSE)
+  ps = create.ps(file="test.rmd", catch.errors=FALSE)
   bdf = ps$bdf
   
   app = rtutorApp(ps,catch.errors = FALSE)
   viewApp(app)
+  viewApp(app, launch.browser = rstudio::viewer)
 }
 
 # Init ps for a new session
@@ -93,8 +94,34 @@ initRTutorApp = function(ps, catch.errors = TRUE, offline=FALSE, use.mathjax = !
   app
 }
 
-
 slidesApp = function(ps,user.name = "John Doe", nick=user.name, start.slide=first.non.null(ps$start.slide,1), dir=getwd(), ups.dir=dir, offline=FALSE, just.return.html=FALSE, catch.errors = TRUE, margin=2, opts=list(), use.clicker=first.non.null(ps$use.clicker,!is.null(clicker.dir)), clicker.dir = ps[["clicker.dir"]]) {
+  restore.point("slidesApp")
+  
+  app = initRTutorApp(ps=ps, catch.errors = catch.errors,offline = offline, dir=dir, ups.dir=ups.dir, opts=opts)
+
+  app$ui = bootstrapPage(
+    #rtutorClickHandler(),
+    ps$ui
+  )
+
+  # Each time the problem set is restarted
+  # reinit the problem set
+  appInitHandler(app=app,function(app,...) {
+    restore.point("slidesApp.appInitHandler")
+    ps = init.ps.session(ps=ps,user.name=user.name, nick=nick,app=app)
+    ps$slide.ind = start.slide
+    app$ps = ps 
+    init.ps.handlers(ps)
+    render.rtutor.widgets(ps=ps)
+    #set.slide(ps=ps)
+  })
+
+  
+  app
+}
+
+
+slidesAppOld = function(ps,user.name = "John Doe", nick=user.name, start.slide=first.non.null(ps$start.slide,1), dir=getwd(), ups.dir=dir, offline=FALSE, just.return.html=FALSE, catch.errors = TRUE, margin=2, opts=list(), use.clicker=first.non.null(ps$use.clicker,!is.null(clicker.dir)), clicker.dir = ps[["clicker.dir"]]) {
   restore.point("slidesApp")
   
   app = initRTutorApp(ps=ps, catch.errors = catch.errors,offline = offline, dir=dir, ups.dir=ups.dir, opts=opts)
@@ -132,6 +159,8 @@ slidesApp = function(ps,user.name = "John Doe", nick=user.name, start.slide=firs
   # Each time the problem set is restarted
   # reinit the problem set
   appInitHandler(app=app,function(app,...) {
+    restore.point("slidesApp.appInitHandler")
+    
     ps = init.ps.session(ps=ps,user.name=user.name, nick=nick,app=app)
     ps$slide.ind = start.slide
     app$ps = ps 
@@ -184,12 +213,12 @@ rtutorApp = function(ps, user.name = "John Doe", nick=user.name, dir=getwd(), up
   appInitHandler(app=app,function(app,...) {
     restore.point("rtApp.appInitHandler")
     cat("app =",capture.output(app)," getApp() =",capture.output(getApp()))
-    ps = init.ps.session(ps=ps,,user.name=user.name, nick=nick,app=app)
+    setApp(app)
+    ps = init.ps.session(ps=ps,user.name=user.name, nick=nick,app=app)
     app$ps = ps 
     init.ps.handlers(ps)
     render.container.descendants(ps=ps,type.ind=1, use.mathjax=ps$use.mathjax, skip.if.rendered=FALSE)
     
-    setApp(app)
   })
   
   
@@ -262,25 +291,6 @@ init.ps.handlers = function(ps) {
   for (uk in ps$uk.li) {
     make.chunk.handlers(uk)
   }
-  
-  # Add handlers for static widgets
-  rows = which(ps$bdf$is.widget & ps$bdf$is.static) 
-  for (bi in rows) {
-    type = ps$bdf$type[[bi]]
-    wid = ps$bdf$obj[[bi]]$wid
-    Wid = ps$Widgets[[type]]
-    if (!is.null(Wid[["init.handlers"]])) {
-      Wid$init.handlers(wid=wid)
-    }
-  }
-  
-}
-
-is.cont.rendered = function(bi, ps) {
-  restore.point("is.cont.rendered")
-  
-  if (is.null(ps$cont.state)) return(FALSE)
-  isTRUE(ps$cont.state$rendered[[bi]])
 }
 
 get.ps.uk = function(ps, bi=NULL, stype.ind=NULL, chunk.ind=stype.ind) {
@@ -291,10 +301,9 @@ get.ps.uk = function(ps, bi=NULL, stype.ind=NULL, chunk.ind=stype.ind) {
 }
 
 render.rtutor.task.chunk = function(ps, bi) {
-  restore.point("render.rtutor.task.chunk")
   uk = get.ts(task.ind=ps$bdf$task.ind[bi])
+  restore.point("render.rtutor.task.chunk")
   make.chunk.handlers(uk)
-  #  get.ps.uk(ps,bi=bi)
   update.chunk.ui(uk)
 }
 

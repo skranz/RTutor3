@@ -52,8 +52,6 @@ rtutor.parse.widget = function(bi, ps, opts=ps$opts) {
 
 # will be called from parse.armd
 rtutor.init.widgets = function(ps) {
-  restore.point("rtutor.init.widgets")
-  
   bdf = ps$bdf
   restore.point("rtutor.init.widgets")
   
@@ -87,12 +85,34 @@ rtutor.init.widgets = function(ps) {
 
 }
 
+render.rtutor.widgets = function(ps, init.handlers=TRUE) {
+  restore.point("render.rtutor.widgets")
+  
+  bis = which(ps$bdf$is.widget)
+  for (bi in bis) {
+    render.rtutor.widget(ps=ps, bi=bi, init.handlers=init.handlers)
+  }
+}
 
-
-render.rtutor.widget = function(ps, bi,  ts = get.ts(bi=bi), init.handlers=TRUE) {
+render.rtutor.widget = function(ps, bi,  ts=NULL, init.handlers=TRUE) {
   restore.point("render.rtutor.widget")
+
+  type = ps$bdf$type[[bi]]
+  # special treatment for chunks and awards
+  # in order not to change old code too much
+  if (type=="chunk") {
+    render.rtutor.task.chunk(ps=ps,bi=bi)
+    return()
+  } else if (type=="award") {
+    #rtutor.parse.award(bi=bi, ps=ps)
+    return()
+  }
   cat("\n******************************************")
   cat("\nrender.rtutor.widget")
+
+  if (is.null(ts))
+    ts = get.ts(bi=bi)
+  
 
   wid = ts$wid
   type = ps$bdf$type[[bi]]
@@ -103,7 +123,7 @@ render.rtutor.widget = function(ps, bi,  ts = get.ts(bi=bi), init.handlers=TRUE)
   dsetUI(output.id, ui)
   if (init.handlers)
     Wid$init.handlers(wid=wid,ts=ts,bi=bi)
-  #cat("render add on not yet implemented.")
+  cat("end render.rtutor.widget")
 }
 
 update.widget = function(id, bi = which(ps$bdf$id==id),ps=get.ps(),...) {
@@ -177,3 +197,5 @@ get.yaml.block.args = function(bi,ps) {
   }
   args
 }
+
+

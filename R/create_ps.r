@@ -1,11 +1,12 @@
 examples.create.ps = function() {
-  file = "D:/libraries/RTutor3/ex1.Rmd"
+  restore.point.options(display.restore.point = TRUE)
+  
+  setwd("D:/libraries/RTutor3/")
+  file = "ex1.Rmd"
   ps = create.ps(file=file)
   app = rtutorApp(ps)
-  viewApp(app,launch.browser = TRUE)
+  viewApp(app,launch.browser = rstudio::viewer)
 
-  
-    
   library(yaml)
   setwd("D:/libraries/RTutor2/examples/sporer")
   txt = readLines("RTutorEnvironmentalRegulations_sol.Rmd")
@@ -38,6 +39,8 @@ examples.create.ps = function() {
 create.ps = function(...) {
   library(armd)
   am = parse.armd(..., rtutor=TRUE)
+  restore.point("create.ps")
+  
   ps = armd.to.ps(am)
 }
 
@@ -68,7 +71,6 @@ armd.to.ps = function(am,dir=getwd(), figure.dir=paste0(dir,"/",figure.sub.dir),
   }
   ps$ps.name = am$am.name
   ps$ps.id = am$am.id
-  ps$Widgets = list()
   ps$dir = dir
   ps$figure.dir = figure.dir
   ps$plugins = plugins
@@ -81,7 +83,11 @@ armd.to.ps = function(am,dir=getwd(), figure.dir=paste0(dir,"/",figure.sub.dir),
   
   ps$navbar.ui = rtutor.navbar(ps=ps, nav.levels = ps$opts$nav.levels)
   
-  remove.existing.ups(ps.name=ps.name, dir=dir)
+  if (ps$slides) {
+    ps$ui = rtutor.slides.ui(ps=ps,add.page = FALSE)
+  }
+  
+  remove.existing.ups(ps.name=ps$ps.name, dir=dir)
   write.rps(ps=ps,dir=dir)
   write.ps.rmd(ps)
 
@@ -204,14 +210,6 @@ rtutor.parse.award = function(bi,ps) {
 }
 
 
-make.ps.ui = function(ps, bdf=ps$bdf) {
-  rows = which(bdf$parent == 0)
-  
-  ui.li = bdf$ui[rows]
-  
-}
-
-
 # data frame that contains chunk info used
 # for rmarkdown based problem sets only
 create.ps.rmc = function(ps) {
@@ -222,12 +220,12 @@ create.ps.rmc = function(ps) {
   
   task.ind = match(bi,ps$task.table$bi)
   
-  
-  
-  shown.code = sapply(ps$bdf$shown.rmd[bi], function(code) {
+  shown.code = sapply(ps$bdf$shown.rmd[bi], USE.NAMES=FALSE, function(code) {
+    #restore.point("nhdfdf")
     txt = sep.lines(code)
     merge.lines(txt[-c(1,length(txt))])
   })
+  
   
   rmc = data_frame(chunk.ind = seq_along(task.ind), bi, task.ind, task.line = ps$task.table$task.line[task.ind], chunk.name = ps$bdf$name[bi], shown.code = shown.code, all.required=vector("list", length(task.ind)))
   ps$rmc = rmc

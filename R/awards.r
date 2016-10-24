@@ -32,7 +32,6 @@ get.award = function(award.bi, ps =get.ps()) {
 show.award = function(award.bi, ps=get.ps()) {
   restore.point("show.award")
   
-  
   if (isTRUE(ps$is.shiny)) {
     show.container(ps=ps,bi=award.bi)
     return()
