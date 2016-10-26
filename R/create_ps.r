@@ -83,10 +83,8 @@ armd.to.ps = function(am,dir=getwd(), figure.dir=paste0(dir,"/",figure.sub.dir),
   
   ps$navbar.ui = rtutor.navbar(ps=ps, nav.levels = ps$opts$nav.levels)
   
-  if (ps$slides) {
-    ps$ui = rtutor.slides.ui(ps=ps,add.page = FALSE)
-  }
-  
+  ps$ui = make.rtutor.ui(ps=ps)
+
   remove.existing.ups(ps.name=ps$ps.name, dir=dir)
   write.rps(ps=ps,dir=dir)
   write.ps.rmd(ps)

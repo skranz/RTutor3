@@ -89,7 +89,6 @@ initRTutorApp = function(ps, catch.errors = TRUE, offline=FALSE, use.mathjax = !
   bdf = ps$bdf
     
   try(shiny::addResourcePath("figure",paste0(dir,"/figure")), silent=TRUE)  
-  nestedSelectorHandler("rtNavbarSelector",fun = select.ps.part.handler)
 
   app
 }
@@ -99,10 +98,7 @@ slidesApp = function(ps,user.name = "John Doe", nick=user.name, start.slide=firs
   
   app = initRTutorApp(ps=ps, catch.errors = catch.errors,offline = offline, dir=dir, ups.dir=ups.dir, opts=opts)
 
-  app$ui = bootstrapPage(
-    #rtutorClickHandler(),
-    ps$ui
-  )
+  app$ui = ps$ui
 
   # Each time the problem set is restarted
   # reinit the problem set
@@ -113,64 +109,12 @@ slidesApp = function(ps,user.name = "John Doe", nick=user.name, start.slide=firs
     app$ps = ps 
     init.ps.handlers(ps)
     render.rtutor.widgets(ps=ps)
-    #set.slide(ps=ps)
   })
 
   
   app
 }
 
-
-slidesAppOld = function(ps,user.name = "John Doe", nick=user.name, start.slide=first.non.null(ps$start.slide,1), dir=getwd(), ups.dir=dir, offline=FALSE, just.return.html=FALSE, catch.errors = TRUE, margin=2, opts=list(), use.clicker=first.non.null(ps$use.clicker,!is.null(clicker.dir)), clicker.dir = ps[["clicker.dir"]]) {
-  restore.point("slidesApp")
-  
-  app = initRTutorApp(ps=ps, catch.errors = catch.errors,offline = offline, dir=dir, ups.dir=ups.dir, opts=opts)
-  
-  ps$slide.ind = start.slide
-  ps.content.ui = ps$bdf$ui[[1]]   
-  
-  css = if (!is.null(ps$css)) tags$head(tags$style(ps$css)) else NULL
-  head = if (!is.null(ps$head)) tags$head(HTML(ps$head)) else NULL
-  
-  inner.ui = tagList(
-    div(id="slideMenuDiv",uiOutput("slideMenuUI")),
-    with.mathjax(ps.content.ui)    
-  )
-  
-  
-  resTags = rtutor.html.ressources()
-  app$ui = tagList(
-    head,
-#    useShinyjs(),
-    resTags,
-    css,
-    rtutorClickHandler(),
-    fluidPage(
-      fluidRow(
-        column(width=12-2*margin, offset=margin,
-          inner.ui 
-        )
-      )
-    ),
-    bottomScript("$('pre code.r').each(function(i, e) {hljs.highlightBlock(e)});")
-  )
-  add.slide.navigate.handlers()
-  
-  # Each time the problem set is restarted
-  # reinit the problem set
-  appInitHandler(app=app,function(app,...) {
-    restore.point("slidesApp.appInitHandler")
-    
-    ps = init.ps.session(ps=ps,user.name=user.name, nick=nick,app=app)
-    ps$slide.ind = start.slide
-    app$ps = ps 
-    init.ps.handlers(ps)
-    set.slide(ps=ps)
-  })
-
-  
-  app
-}
 
 rtutorApp = function(ps, user.name = "John Doe", nick=user.name, dir=getwd(), ups.dir=dir, offline=FALSE, just.return.html=FALSE, catch.errors = TRUE, margin=2,opts=list(),...) {
   restore.point("rtutorApp")
@@ -181,32 +125,7 @@ rtutorApp = function(ps, user.name = "John Doe", nick=user.name, dir=getwd(), up
   
   app = initRTutorApp(ps=ps, catch.errors = catch.errors,offline = offline,dir=dir, ups.dir=ups.dir, opts=opts,...)
   
-  
-  
-  ps.content.ui = ps$bdf$ui[[1]]
-  n = NROW(ps$bdf)
-  
-  resTags = rtutor.html.ressources()
-
-  css = if (!is.null(ps$css)) tags$head(tags$style(ps$css)) else NULL
-  head = if (!is.null(ps$head)) tags$head(HTML(ps$head)) else NULL
-
-  app$ui = tagList(
-    head,
-#    useShinyjs(),
-    resTags,
-    css,
-    rtutorClickHandler(),
-    
-    bootstrapPage(
-      ps.layout(ps=ps, ps.content.ui = ps.content.ui)
-    ),
-    bottomScript("$('pre code.r').each(function(i, e) {hljs.highlightBlock(e)});")
-    
-  ) 
-  
-
-  
+  app$ui = ps$ui
 
   # Each time the problem set is restarted
   # reinit the problem set
@@ -217,8 +136,7 @@ rtutorApp = function(ps, user.name = "John Doe", nick=user.name, dir=getwd(), up
     ps = init.ps.session(ps=ps,user.name=user.name, nick=nick,app=app)
     app$ps = ps 
     init.ps.handlers(ps)
-    render.container.descendants(ps=ps,type.ind=1, use.mathjax=ps$use.mathjax, skip.if.rendered=FALSE)
-    
+    render.rtutor.widgets(ps=ps)
   })
   
   
@@ -282,9 +200,10 @@ select.ps.part.handler = function(value, shown_contents, app=getApp(), ps=app$ps
 init.ps.handlers = function(ps) {
   restore.point("init.ps.handler")
   
-  # Add menu bar handler
   
-  nestedSelectorHandler("rtNavbarSelector",fun = select.ps.part.handler)
+  sidebar.ui.handlers(ps)
+  # Add menu bar handler
+  #nestedSelectorHandler("rtNavbarSelector",fun = select.ps.part.handler)
   
   make.global.chunk.hotkey.handlers()
   # Add handlers for task chunks

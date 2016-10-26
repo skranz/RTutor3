@@ -17,6 +17,15 @@ sidebar.ui = function(ps=app$ps, app=getApp()) {
   divs = lapply(seq_along(Plugins), function(i) {
     hidden_div(id=paste0(plugins[i],"_plugin_div"),Plugins[[i]]$sidebar.ui())
   })
+  tagList(
+    div(style="background-color: #eeeeee; width: 100%; border-bottom: solid #999999 1px;",ns$ui),
+    div(style="padding-left: 2px; padding-right: 2px;",
+      divs
+    )
+  )
+}
+
+sidebar.ui.handlers = function(...) {
   
   nestedSelectorHandler("plugin_sel", function(value,..., ps=get.ps()) {
     #args = list(...)
@@ -26,12 +35,7 @@ sidebar.ui = function(ps=app$ps, app=getApp()) {
     call.plugin.handler("activate.handler",plugin=plugin)
   })
   
-  tagList(
-    div(style="background-color: #eeeeee; width: 100%; border-bottom: solid #999999 1px;",ns$ui),
-    div(style="padding-left: 2px; padding-right: 2px;",
-      divs
-    )
-  )
+  
 }
 
 get.plugin.state = function(plugin=ps$active.plugin, ps=get.ps()){
