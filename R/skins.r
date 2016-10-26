@@ -7,6 +7,17 @@ make.rtutor.ui = function(ps,...) {
   ui
 }
 
+aceHeaders = function() {
+  singleton(tags$head(
+      tags$script(src = 'shinyAce/ace/ace.js'),
+      tags$script(src = 'shinyAce/ace/ext-language_tools.js'),
+      tags$script(src = 'shinyAce/shinyAce.js'),
+      tags$link(rel = 'stylesheet',
+                type = 'text/css',
+                href = 'shinyAce/shinyAce.css')
+  ))
+}
+
 rtutor.slides.ui = function(ps = NULL, add.page=TRUE, start.slide = 1) {
   restore.point("rtutor.slides.ui")
 
@@ -25,7 +36,7 @@ rtutor.slides.ui = function(ps = NULL, add.page=TRUE, start.slide = 1) {
 
   ui = tagList(
     tags$head(HTML("\n<!-- MyHeadStart -->\n")),
-
+    aceHeaders(),
     singleton(tags$head(tags$link(rel = 'stylesheet', type = 'text/css',href = 'highlightjs/styles/mycode.css'))),
     singleton(tags$head(tags$script(src = 'highlightjs/highlight.min.js',class="remove_offline", type = 'text/javascript'))),
     singleton(tags$head(tags$script(src = 'highlightjs/languages/r.min.js', class="remove_offline",type = 'text/javascript'))),
@@ -157,6 +168,7 @@ center: {
 
   ui = tagList(
     head,
+    aceHeaders(),
     resTags,
     css,
     bootstrapPage(

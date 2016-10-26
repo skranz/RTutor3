@@ -62,6 +62,9 @@ initRTutorApp = function(ps, catch.errors = TRUE, offline=FALSE, use.mathjax = !
   if (!is.null(ps$figure.web.dir))
     addResourcePath(ps$figure.web.dir,figure.dir)
 
+  shiny::addResourcePath(prefix = "shinyAce", directoryPath = system.file("www", package = "shinyAce"))
+  #shinyAce:::initResourcePaths()
+  
   ps$opts[names(opts)] = opts
   
   app$ps = ps
@@ -223,7 +226,7 @@ render.rtutor.task.chunk = function(ps, bi) {
   uk = get.ts(task.ind=ps$bdf$task.ind[bi])
   restore.point("render.rtutor.task.chunk")
   make.chunk.handlers(uk)
-  update.chunk.ui(uk)
+  update.chunk.ui(uk,dset = TRUE)
 }
 
 rtutor.navigate.btns = function() {

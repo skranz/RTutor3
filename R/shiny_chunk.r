@@ -6,11 +6,14 @@ set.nali.names = function(x, nali) {
 }
 
 # update a chunk.ui to the specified mode
-update.chunk.ui = function(uk, mode=uk$mode,app=getApp()) {
+update.chunk.ui = function(uk, mode=uk$mode,app=getApp(),dset=FALSE) {
   restore.point("update.chunk.ui")
   ck = uk$ck
   uk$mode = mode
   ui = get.chunk.ui(uk)
+  #cat(as.character(ui))
+  if (dset)
+    dsetUI(ck$nali$chunkUI, ui)
   setUI(ck$nali$chunkUI, ui)
 }
 

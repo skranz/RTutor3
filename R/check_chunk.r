@@ -10,6 +10,8 @@ empty.log = function() {
 check.chunk = function(uk, stud.code=uk$stud.code, task.env=make.fresh.task.env(ts=uk), opts=rt.opts(), log=empty.log(), expect.change = FALSE, store.output=TRUE, noeval = opts$noeval, precomp=opts$precomp,verbose=isTRUE(opts$verbose), use.secure.eval = opts$use.secure.eval, save.ups = TRUE) {
   restore.point("check.chunk")
 
+  
+  
   opts$noeval = noeval
   uk$log = log
   ck = uk$ck
@@ -17,6 +19,11 @@ check.chunk = function(uk, stud.code=uk$stud.code, task.env=make.fresh.task.env(
   chunk.ind = ck$chunk.ind
   chunk.name = ck$chunk.name
   uk$last.check.code = stud.code
+  
+  if (is.null(stud.code)) {
+    log$failure.message=paste0("stud.code is NULL")
+    return(FALSE)
+  }
   
   if (expect.change)  {
     if (stud.code == ck$shown.txt) {

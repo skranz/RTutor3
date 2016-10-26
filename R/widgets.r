@@ -94,7 +94,7 @@ render.rtutor.widgets = function(ps, init.handlers=TRUE) {
   }
 }
 
-render.rtutor.widget = function(ps, bi,  ts=NULL, init.handlers=TRUE) {
+render.rtutor.widget = function(ps, bi,  ts=NULL, init.handlers=TRUE, dset=TRUE) {
   restore.point("render.rtutor.widget")
 
   type = ps$bdf$type[[bi]]
@@ -120,7 +120,9 @@ render.rtutor.widget = function(ps, bi,  ts=NULL, init.handlers=TRUE) {
   ui = Wid$ui.fun(ts=ts)
   output.id = ps$bdf$output.id[[bi]]  
   setUI(output.id, ui)
-  dsetUI(output.id, ui)
+  if (dset)
+    dsetUI(output.id, ui)
+
   if (init.handlers)
     Wid$init.handlers(wid=wid,ts=ts,bi=bi)
   cat("end render.rtutor.widget")
@@ -199,3 +201,7 @@ get.yaml.block.args = function(bi,ps) {
 }
 
 
+setUI = function(...) {
+  shinyEvents::dsetUI(...)
+  shinyEvents::setUI(...)
+}
