@@ -62,7 +62,7 @@ initRTutorApp = function(ps, catch.errors = TRUE, offline=FALSE, use.mathjax = !
   if (!is.null(ps$figure.web.dir))
     addResourcePath(ps$figure.web.dir,figure.dir)
 
-  shiny::addResourcePath(prefix = "shinyAce", directoryPath = system.file("www", package = "shinyAce"))
+  #shiny::addResourcePath(prefix = "shinyAce", directoryPath = system.file("www", package = "shinyAce"))
   #shinyAce:::initResourcePaths()
   
   ps$opts[names(opts)] = opts

@@ -307,7 +307,8 @@ quiz.ui = function(qu, solution=FALSE) {
     }
   })
   if (!is.null(qu$checkBtnId)) {
-    pli = c(pli, list(actionButton(qu$checkBtnId,label = "check"),br()))
+    ids = sapply(qu$parts, function(part) part$answerId)
+    pli = c(pli, list(submitButton(qu$checkBtnId,label = "check",form.ids = ids),br()))
   }
 
   with.mathjax(pli)
@@ -342,7 +343,7 @@ quiz.part.ui = function(part, solution=FALSE, add.button=!is.null(part$checkBtnI
   }
 
   if (add.button) {
-    button = actionButton(part$checkBtnId,label = "check")
+    button = submitButton(part$checkBtnId,label = "check", form.ids = part$answerId)
   } else {
     button = NULL
   }
@@ -383,6 +384,11 @@ quiz.part.md = function(part, solution=FALSE) {
   paste0(head,"\n", answer)
 }
 
+submitButton = function (inputId, label, icon = NULL, width = NULL, form.ids = NULL, form.sel = ids2sel(form.ids), ...) {
+  restore.point("submitButton")
+  
+  actionButton(inputId,label,icon, width, "data-form-selector"=form.sel)
+}
 
 add.quiz.handlers = function(qu, quiz.handler=NULL, id=qu$id){
   restore.point("add.quiz.handlers")
@@ -398,9 +404,10 @@ add.quiz.handlers = function(qu, quiz.handler=NULL, id=qu$id){
   buttonHandler(qu$checkBtnId,fun = click.check.quiz, qu=qu, quiz.handler=quiz.handler)
 }
 
-check.quiz.part = function(part.ind,qu, app=getApp()) {
+check.quiz.part = function(part.ind,qu, values=NULL, app=getApp()) {
   part = qu$parts[[part.ind]]
   answer = getInputValue(part$answerId)
+  #answer = values[[part$answerId]]
   restore.point("check.quiz.part")
 
   if (part$type =="numeric") {
@@ -419,9 +426,9 @@ check.quiz.part = function(part.ind,qu, app=getApp()) {
   return(correct)
 }
 
-click.check.quiz = function(app=getApp(), qu, quiz.handler=NULL, ...) {
+click.check.quiz = function(app=getApp(), qu, quiz.handler=NULL, formValues, ...) {
   restore.point("click.check.quiz")
-  part.solved = sapply(seq_along(qu$parts), check.quiz.part, qu=qu,app=app) 
+  part.solved = sapply(seq_along(qu$parts), check.quiz.part, qu=qu,app=app, values=formValues) 
   solved = all(part.solved)
   if (!is.null(quiz.handler)) {
     quiz.handler(app=app, qu=qu, part.solved=part.solved, solved=solved)

@@ -36,7 +36,7 @@ rtutor.slides.ui = function(ps = NULL, add.page=TRUE, start.slide = 1) {
 
   ui = tagList(
     tags$head(HTML("\n<!-- MyHeadStart -->\n")),
-    aceHeaders(),
+    #aceHeaders(),
     singleton(tags$head(tags$link(rel = 'stylesheet', type = 'text/css',href = 'highlightjs/styles/mycode.css'))),
     singleton(tags$head(tags$script(src = 'highlightjs/highlight.min.js',class="remove_offline", type = 'text/javascript'))),
     singleton(tags$head(tags$script(src = 'highlightjs/languages/r.min.js', class="remove_offline",type = 'text/javascript'))),
@@ -168,7 +168,7 @@ center: {
 
   ui = tagList(
     head,
-    aceHeaders(),
+    #aceHeaders(),
     resTags,
     css,
     bootstrapPage(

@@ -201,7 +201,7 @@ get.yaml.block.args = function(bi,ps) {
 }
 
 
-setUI = function(...) {
+dsetUI = function(...) {
   shinyEvents::dsetUI(...)
   shinyEvents::setUI(...)
 }
