@@ -37,19 +37,30 @@ rtutor.parse.task.chunk  = function(bi,ps,args, opts=ps$opts) {
   # parse all blocks and create shown.txt, sol.txt,
   # expression lists and hint and test markers in ck
   for (i in seq_along(txt.li)) {
-    add.chunk.block(ck=ck,type=types[i], str=txt.li[[i]],cbi=i,bi=bi,ps=ps, add.enter.code.here = isTRUE(opts$add.enter.code.here))
+    add.chunk.block(ck=ck,type=types[i], str=txt.li[[i]],cbi=i,bi=bi,ps=ps)
   }
   
-  # Collapse, since txt from aceEditor is also collapsed
-  #head = ps$txt[br$start]
-  #tail = ps$txt[br$end]
-  #ck$shown.txt = paste0(c(head,ck$shown.txt,tail), collapse="\n")
-  #ck$sol.txt = paste0(c(head,ck$sol.txt,tail), collapse="\n")
+  if (is.null(ck$shown.txt)) ck$shown.txt = ""
+  
+  add.enter.code.here = isTRUE(opts$add.enter.code.here)  
+  if (add.enter.code.here &
+      all(nchar(str.trim(sep.lines(ck$shown.txt)))==0)) {
+    ck$shown.txt = c("# enter your code here ...")
+  }
+  ck$shown.txt = paste0(ck$shown.txt, collapse="\n")
+
+  # Make rmd
+  head = ps$txt[br$start]
+  tail = ps$txt[br$end]
+  shown.rmd = paste0(c(head,ck$shown.txt,tail), collapse="\n")
+  sol.rmd = paste0(c(head,ck$sol.txt,tail), collapse="\n")
+  ps$bdf[bi,c("shown.rmd","sol.rmd","out.rmd")] = c(
+    shown.rmd, sol.rmd, sol.rmd  
+  )
   
   # add tests and hints
   add.chunk.tests.and.hints(ck)
 
-  
   # specify points
   if (is.null(args$points)) {
     ck$max.points = max(opts$e.points * (ck$num.e-sum(ck$e.shown)) + opts$chunk.points, opts$chunk.min.points)
@@ -64,11 +75,7 @@ rtutor.parse.task.chunk  = function(bi,ps,args, opts=ps$opts) {
   ps$bdf$obj[[bi]]$ck = ck
   ps$bdf$is.task[[bi]] = TRUE
 
-  shown.txt = paste0(ck$shown.txt, collapse="\n")
-  sol.txt = paste0(ck$sol.txt, collapse = "\n")
-  ps$bdf[bi,c("shown.rmd","sol.rmd","out.rmd")] = c(
-    shown.txt, sol.txt, sol.txt  
-  )
+  ck$chunk.ind = sum(ps$bdf$stype[1:bi]=="task_chunk", na.rm = TRUE)
   ck$nali = make.chunk.nali(id=ck$id, output.id = br$output.id)
 
   # set task env info
@@ -123,7 +130,7 @@ init.state.task.chunk = function(ck) {
   ))
 }
 
-add.chunk.block = function(ck,type,str, add.enter.code.here=FALSE,cbi, bi,ps) {
+add.chunk.block = function(ck,type,str,cbi, bi,ps) {
   restore.point("add.chunk.block")
   if (is.null(str)) return()
   
@@ -138,9 +145,6 @@ add.chunk.block = function(ck,type,str, add.enter.code.here=FALSE,cbi, bi,ps) {
   
   # Add shown code and solution code
   if (type == "code") {
-    if (add.enter.code.here) {
-      ck$shown.txt = c("\n# enter your code here ...\n", ck$shown.txt)  
-    }
     ck$sol.txt = paste0(c(ck$sol.txt,btxt),collapse="\n")
   } else if (type=="show" | type == "show_notest") {
     ck$shown.txt = paste0(c(ck$shown.txt,btxt),collapse="\n")
@@ -166,7 +170,6 @@ add.chunk.block = function(ck,type,str, add.enter.code.here=FALSE,cbi, bi,ps) {
       type=type,bi=bi,cbi=cbi,e.ind=length(ck$e.li),btxt=btxt
     )))
   }
-  
 }
 
 add.chunk.tests.and.hints = function(ck) {

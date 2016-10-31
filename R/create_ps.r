@@ -63,6 +63,10 @@ armd.to.ps = function(am,dir=getwd(), figure.dir=paste0(dir,"/",figure.sub.dir),
   library(armd)
   
   ps = am
+  set.rt.opts(ps$opts)
+  set.ps(ps)
+  
+  ps$is.initialized=FALSE
   ps$version = 0.1
   ps$figure.web.dir = figure.web.dir
   ps$figure.sub.dir = figure.sub.dir
@@ -86,6 +90,7 @@ armd.to.ps = function(am,dir=getwd(), figure.dir=paste0(dir,"/",figure.sub.dir),
   ps$ui = make.rtutor.ui(ps=ps)
 
   remove.existing.ups(ps.name=ps$ps.name, dir=dir)
+  ps$rps.time.stamp = Sys.time()
   write.rps(ps=ps,dir=dir)
   write.ps.rmd(ps)
 
@@ -116,7 +121,7 @@ rtutor.preparse.block = function(bi,ps, opts = ps$opts) {
   }
 }
 
-rtutor.parse.chunk = function(bi,ps, opts=rt.opts()) {
+rtutor.parse.chunk = function(bi,ps, opts=ps$opts) {
   restore.point("rtutor.parse.chunk")
   bdf = ps$bdf; br = bdf[bi,]; str = ps$txt[br$start:br$end]
   args = parse.chunk.args(header = str[1])
@@ -148,6 +153,10 @@ rtutor.parse.chunk = function(bi,ps, opts=rt.opts()) {
     #ui = tagList(ui, highlight.code.script())
     set.bdf.ui(ui, bi,ps)
     ps$bdf[bi,c("shown.rmd","sol.rmd","out.rmd")] = mstr
+  }
+  if (!chunk.task) {
+    ps$bdf$is.widget[[bi]]= FALSE
+    ps$bdf$is.task[[bi]] = FALSE
   }
   if (chunk.task) {
     ps$bdf$stype[[bi]] = "task_chunk"
@@ -186,27 +195,6 @@ armd.parse.solved = function(bi,ps) {
   restore.point("rtutor.parse.solved")
   rtutor.parse.as.container(bi,ps)
 }
-
-rtutor.parse.award = function(bi,ps) {
-  restore.point("rtutor.parse.award")
-  br = ps$bdf[bi,]
-  
-  args = parse.block.args(arg.str = ps$bdf$arg.str[[bi]])
-  award.name = args$name
-  
-  res = get.children.and.fragments.ui.list(bi,ps, keep.null=FALSE)
-  out.rmd = merge.lines(c("---\n### Award",res$out.rmd,"---"))
-  rmd.li = list(shown.rmd="",sol.rmd="",out.rmd=out.rmd)
-  content.ui=res$ui.li
-  obj = list(award.bi =bi, award.name=award.name, html=as.character(tagList(content.ui)), txt = res$out.rmd)
-
-  title = paste0("Award: ",award.name) 
-  
-  inner.ui = tagList(br(),shinyBS::bsCollapse(id = paste0("award_collapse_",bi), myCollapsePanel(title=title,header.style="background-color: #DFC463;box-shadow: 2px 2px 2px #888888;",content.ui)))
-
-  armd.parse.as.container(bi=bi,am=ps,args = args, inner.ui=inner.ui,rmd.li = rmd.li,highlight.code = TRUE,is.widget = FALSE,title = NULL, is.hidden = TRUE)  
-}
-
 
 # data frame that contains chunk info used
 # for rmarkdown based problem sets only

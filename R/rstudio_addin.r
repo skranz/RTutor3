@@ -9,8 +9,7 @@ guess.rtutor.file = function(txt = readLines(file)) {
   return("ps")
 }
 
-checkProblemSet2Addin = function(...) {
-  library(RTutor2)
+checkProblemSet3Addin = function(...) {
   doc = rstudioapi::getActiveDocumentContext()
   restore.point("checkProblemSet2Addin")
   cat("\nCheck Problemset")
@@ -51,5 +50,10 @@ checkProblemSet2Addin = function(...) {
   
   ps.name = tools::file_path_sans_ext(basename(rps.file))
   
-  res = try(check.problem.set(ps.name = ps.name,stud.short.file = file, stud.path = dir))
+  # save file
+  txt = doc$contents
+  writeLines(txt, doc$path)
+  
+  
+  res = try(RTutor3::check.problem.set(ps.name = ps.name,stud.short.file = file, stud.path = dir))
 }

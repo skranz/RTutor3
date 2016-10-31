@@ -1,3 +1,25 @@
+# render widgets when app starts
+# render some widgets directly and others delayed
+initial.render.widgets = function(ps, n.direct=5) {
+  bis = which(ps$bdf$is.widget)
+  first = bis[1:min(n.direct,length(bis))]
+  other =  setdiff(bis, first)
+  
+  render.rtutor.widgets(ps=ps,bis=first)
+    
+  if (length(other)>0) {
+    shinyDelayedRun(100, function(ps,other,...) {
+      render.rtutor.widgets(ps=ps, bis=other)
+    },ps=ps, other=other)
+  }
+}
+
+render.first.widgets = function(ps,n=2) {
+  if (length(bis)==0) return()
+  bis = 
+  render.rtutor.widgets(ps=ps, bis=bis)
+}
+
 
 rtutor.parse.widget = function(bi, ps, opts=ps$opts) {
   restore.point("rtutor.parse.widget")
@@ -68,7 +90,7 @@ rtutor.init.widgets = function(ps) {
     presolve.task = ps$opts$presolve
   )
   bdf = ps$bdf
-  widgets = unique(bdf$type[bdf$is.widget])
+  widgets = na.omit(unique(bdf$type[bdf$is.widget]))
 
   # currently still
   # special treatment for chunks and awards
@@ -85,10 +107,8 @@ rtutor.init.widgets = function(ps) {
 
 }
 
-render.rtutor.widgets = function(ps, init.handlers=TRUE) {
+render.rtutor.widgets = function(ps, init.handlers=TRUE,bis = which(ps$bdf$is.widget)) {
   restore.point("render.rtutor.widgets")
-  
-  bis = which(ps$bdf$is.widget)
   for (bi in bis) {
     render.rtutor.widget(ps=ps, bi=bi, init.handlers=init.handlers)
   }
@@ -104,7 +124,7 @@ render.rtutor.widget = function(ps, bi,  ts=NULL, init.handlers=TRUE, dset=TRUE)
     render.rtutor.task.chunk(ps=ps,bi=bi)
     return()
   } else if (type=="award") {
-    #rtutor.parse.award(bi=bi, ps=ps)
+    show.award(award.bi = bi, ps=ps)
     return()
   }
   cat("\n******************************************")

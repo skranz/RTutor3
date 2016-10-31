@@ -62,7 +62,7 @@ rtutor.slides.ui = function(ps = NULL, add.page=TRUE, start.slide = 1) {
 
 
 
-ps.layout = function(ps, ps.content.ui, opts = rt.opts(), main.layout = opts$main.layout) {
+ps.layout = function(ps, ps.content.ui, opts = ps$opts, main.layout = opts$main.layout) {
   default.ps.layout(ps, ps.content.ui)
 }
 
@@ -133,7 +133,7 @@ center: {
 '<button id="toogleEastBtn" type="button" class="btn btn-default action-button shiny-bound-input btn-xs" onclick="mainLayoutLayoutVar.toggle(\'east\')">
         <i class="fa fa-bars"></i>
 </button>')
-    sidebar.ui = sidebar.ui()
+    sidebar.ui = sidebar.ui(ps=ps)
   }
   
   inner = tagList(jqueryLayoutHeader(), jqueryLayoutPanes(id="mainLayout",style=style,json.opts = json.opts,
@@ -168,7 +168,6 @@ center: {
 
   ui = tagList(
     head,
-    #aceHeaders(),
     resTags,
     css,
     bootstrapPage(
@@ -254,13 +253,13 @@ east: {
       with.mathjax(ps.content.ui)
     ),
     east = div(
-      sidebar.ui()
+      sidebar.ui(ps=ps)
     )
   )
 }
 
 
-rtutor.navbar = function(ps, opts=rt.opts(), nav.levels = c("section","subsection","frame")) {
+rtutor.navbar = function(ps, opts=ps$opts, nav.levels = c("section","subsection","frame")) {
   restore.point("rtutor.navbar")
   
   bdf = ps$bdf

@@ -1,6 +1,5 @@
 export.ui = function(ps=get.ps()) {
   restore.point("export.ui")
-  make.export.handlers()
   if (file.exists("downloads.zip")) {
     zip.ui = list(
       downloadButton("downloadZipBtn","Download additional material"),

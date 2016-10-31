@@ -8,7 +8,7 @@ write.ps.rmd = function(ps) {
 write.sol.rmd = function(ps, file = paste0(ps$ps.name,"_sample_solution.Rmd")) {
   restore.point("write.sol.rmd")
   rmd = ps$bdf$sol.rmd[1]  
-  header = ps.rmd.header(ps)
+  header = ps.sample.sol.header(ps)
   rmd = c(header, rmd)
   rmd = mark_utf8(rmd)
   writeLines(rmd, file, useBytes=TRUE)
@@ -37,12 +37,23 @@ write.shown.rmd = function(ps, file = paste0(ps$ps.name,"_problemset.Rmd")) {
 
 
 
-ps.rmd.header = function(ps, opts=rt.opts()) {
+ps.rmd.header = function(ps, opts=ps$opts) {
 
 "This is an interactive RTutor problem set. You can check your solution by running the RStudio addin 'Check Problemset'.\n"
 
 paste0("Problemset: ", ps$ps.name,"
-Username: Enter Your Username Here
+Username: ENTER YOUR USERNAME HERE
+")  
+
+  
+}
+
+ps.sample.sol.header = function(ps, opts=ps$opts) {
+
+"This is an interactive RTutor problem set. You can check your solution by running the RStudio addin 'Check Problemset'.\n"
+
+paste0("Problemset: ", ps$ps.name,"
+Username: Jane Doe
 ")  
 
   
@@ -50,8 +61,9 @@ Username: Enter Your Username Here
 
 
 
-out.rmd.header = function(ps, opts = rt.opts()) {
-  libs = paste0("library(", c(ps$libs,"RTutor"),")", collapse="\n")  
+
+out.rmd.header = function(ps, opts = ps$opts) {
+  libs = paste0("library(", c(ps$opts$libs,"RTutor"),")", collapse="\n")  
   source.txt = if (!is.null(ps$extra.code.file)) paste0('\nsource("',ps$extra.code.file,'")', collapse="") else ""
   
   knit.params = opts$knit.print.params
@@ -104,3 +116,22 @@ code.to.rmd.chunk = function(code, args, label=args$label) {
   }
   c(head,code,"```")
 }
+
+
+
+remove.verbatim.end.chunks = function(chunk.start, chunk.end) {
+  restore.point("remove.verbatim.end.chunks")
+  df = data.frame(ind =c(0, seq_along(chunk.start), seq_along(chunk.end)),
+                  row=c(0, chunk.start,chunk.end),
+                  type=c("f",
+                         rep("s",length(chunk.start)),
+                         rep("e",length(chunk.end))
+                       )
+                  )
+  df = arrange(df,row)
+  df$del =  df$type == "e" & !is.true(lag(df$type) == "s")
+
+  keep.ind = df$ind[df$type=="e" & !df$del]
+  chunk.end[keep.ind]
+}
+

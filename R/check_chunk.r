@@ -10,8 +10,6 @@ empty.log = function() {
 check.chunk = function(uk, stud.code=uk$stud.code, task.env=make.fresh.task.env(ts=uk), opts=rt.opts(), log=empty.log(), expect.change = FALSE, store.output=TRUE, noeval = opts$noeval, precomp=opts$precomp,verbose=isTRUE(opts$verbose), use.secure.eval = opts$use.secure.eval, save.ups = TRUE) {
   restore.point("check.chunk")
 
-  
-  
   opts$noeval = noeval
   uk$log = log
   ck = uk$ck
@@ -44,14 +42,6 @@ check.chunk = function(uk, stud.code=uk$stud.code, task.env=make.fresh.task.env(
   uk$stud.expr.li = NULL
   uk$task.env = task.env
   
-  if (length(ck$test.expr)==0) {
-    log$success.message = ""
-    uk$passed = uk$solved = TRUE
-    uk$points = uk$ck$max.points
-    if (uk$ck$max.points>0)
-      process.checked.task(ts=uk,save.ups=save.ups)
-    return(TRUE)
-  }
 
   if (verbose) {
     display("parse stud.code...")
@@ -121,6 +111,46 @@ check.chunk = function(uk, stud.code=uk$stud.code, task.env=make.fresh.task.env(
 
 }
 
+secure.check.chunk.eval.part = function(uk,log, task.env, opts, store.output,verbose=FALSE) {
+  
+  secure.fun = function(uk,log, task.env, opts, store.output,verbose=FALSE) {
+    ok = check.chunk.eval.part(uk,log, task.env, opts, store.output,verbose=FALSE)
+    
+    class(task.env) = "environment"
+    res = list(
+      ok = as.logical(ok),
+      success.message=as.character(log$success.message),
+      failure.message=as.character(log$failure.message),
+      success.log=as.character(log$success.log),
+      chunk.console.out = as.character(log$chunk.console.out),
+      e.ind = as.integer(uk$e.ind),
+      passed = as.logical(uk$passed),
+      points= as.numeric(uk$points),
+      
+      # BEWARE: task.env can be toxic. 
+      # Objects inside may be redefined...
+      # Also functions may be included inside...
+      # Never perform any evaluation using task.env
+      # not wrapped by RAppArmor!
+      task.env=task.env
+    )
+    return(res)
+  }
+  res = rtutor.eval.secure(secure.fun(uk,log, task.env, opts, store.output,verbose))
+  
+  log$success.message=res$success.message
+  log$failure.message=res$failure.message
+  log$success.log=res$success.log
+  log$chunk.console.out = res$chunk.console.out
+  
+  uk$e.ind = uk$e.ind
+  uk$passed = uk$passed
+  uk$points= uk$points
+
+  copy.into.env(dest=task.env, source=res$task.env)
+  return(res$ok)
+}
+
 # the part of check chunk that performs evaluations of student code
 # we put in a separate function in order to easier wrap it inside a 
 # secure.eval call when RAppArmor is used.
@@ -130,8 +160,8 @@ check.chunk.eval.part = function(uk,log, task.env, opts, store.output,verbose=FA
   # run student code in student.env
   if (!opts$noeval) {
     # We may not store output for speed reasons
-    # storing output slows down checking of chunk if large
-    # data frame is shown
+    # storing output slows down checking of chunk
+    # if large data frame is shown.
     if (!store.output) log$chunk.console.out=""
     has.error = !stepwise.eval.stud.expr(stud.expr=uk$stud.expr.li,task.env=task.env, log=log, store.output=store.output)
     if (has.error) {
@@ -140,6 +170,15 @@ check.chunk.eval.part = function(uk,log, task.env, opts, store.output,verbose=FA
     }
   }
 
+  # no tests
+  if (length(ck$test.expr)==0) {
+    log$success.message = ""
+    uk$passed = uk$solved = TRUE
+    uk$points = uk$ck$max.points
+    return(TRUE)
+  }
+
+  
   uk$had.warning = FALSE
   if (verbose) {
     display("run tests...")
@@ -190,6 +229,8 @@ check.chunk.eval.part = function(uk,log, task.env, opts, store.output,verbose=FA
 
   return(TRUE)
 }
+
+
 
 update.log.test.result = function(...) {
   return()

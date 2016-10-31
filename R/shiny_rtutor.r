@@ -298,6 +298,7 @@ inner.rtutor.eval.to.string = function(expr.li, envir) {
 
 eval.in.ace.console = function(code,envir=parent.frame(), consoleId,session=app$session, app=getApp()) {
   restore.point("eval.in.ace.console")
+  if (is.null(code)) code = ""
   out = rtutor.eval.to.string(code,envir, convert=TRUE)
 
   #iconv(out,"UTF-8", "LATIN2")

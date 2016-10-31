@@ -13,6 +13,7 @@ default.ps.opts = function(
   number.levels = NULL,
   
   menu.placement = c("top","fixed"),
+
   stats.aggregate.by = "section",
   # task.env
   task.env.together = show.together,
@@ -26,11 +27,11 @@ default.ps.opts = function(
   is.shiny = TRUE,
   catch.errors = TRUE,
   # parameters related to chunk points
-  e.points = 2,
+  e.points = 1,
   chunk.preknit = FALSE,
   chunk.precomp = FALSE,
   chunk.min.points=0,
-  chunk.points=1,      
+  chunk.points=0,      
   show.points = TRUE,
   # relevant for shiny_chunk
   show.line.numbers = TRUE,

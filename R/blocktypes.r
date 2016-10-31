@@ -6,7 +6,7 @@ armd.block.types.df = function(...) {
   types = c(
     "chunk","quiz","award",
     "preknit","precompute",
-    "show","notest","show_notest","hint","test","test_args",
+    "show","notest","show_notest","hint","test","test_arg",
     "rmdform"
   )
   widgets = c("chunk","quiz","award","rmdform")

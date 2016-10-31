@@ -111,6 +111,7 @@ slidesApp = function(ps,user.name = "John Doe", nick=user.name, start.slide=firs
     ps$slide.ind = start.slide
     app$ps = ps 
     init.ps.handlers(ps)
+    
     render.rtutor.widgets(ps=ps)
   })
 
@@ -139,7 +140,8 @@ rtutorApp = function(ps, user.name = "John Doe", nick=user.name, dir=getwd(), up
     ps = init.ps.session(ps=ps,user.name=user.name, nick=nick,app=app)
     app$ps = ps 
     init.ps.handlers(ps)
-    render.rtutor.widgets(ps=ps)
+    initial.render.widgets(ps)
+    # cat("\n\ndelayed Run\n\n"))
   })
   
   
