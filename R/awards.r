@@ -97,7 +97,7 @@ rtutor.parse.award = function(bi,ps) {
   award.name = args$name
   
   res = get.children.and.fragments.ui.list(bi,ps, keep.null=FALSE)
-  out.rmd = merge.lines(c("\n---\n### Award",res$rmd$rmd,"---\n"))
+  out.rmd = merge.lines(c(paste0("---\n### Award ",award.name),res$rmd$rmd,"---"))
   rmd = list(shown="",sol="",rmd=out.rmd, newline=FALSE)
   content.ui=res$ui.li
   obj = list(award.bi =bi, award.name=award.name, html=as.character(tagList(content.ui)), txt = res$out.rmd)
