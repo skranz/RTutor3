@@ -2,6 +2,7 @@
 default.ps.opts = function(
   ps.type = "shiny",
   
+  rmd.modes = c("rmd","tex","shown","sol"),
   plugins = c("stats","export","dataexplorer"),
   # slides
   slides = identical(ps.type,"slides"),

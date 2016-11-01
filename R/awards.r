@@ -97,8 +97,8 @@ rtutor.parse.award = function(bi,ps) {
   award.name = args$name
   
   res = get.children.and.fragments.ui.list(bi,ps, keep.null=FALSE)
-  out.rmd = merge.lines(c("---\n### Award",res$out.rmd,"---"))
-  rmd.li = list(shown.rmd="",sol.rmd="",out.rmd=out.rmd)
+  out.rmd = merge.lines(c("\n---\n### Award",res$rmd$rmd,"---\n"))
+  rmd = list(shown="",sol="",rmd=out.rmd, newline=FALSE)
   content.ui=res$ui.li
   obj = list(award.bi =bi, award.name=award.name, html=as.character(tagList(content.ui)), txt = res$out.rmd)
   ps$bdf$obj[[bi]] = obj
@@ -107,6 +107,6 @@ rtutor.parse.award = function(bi,ps) {
   
   inner.ui = tagList(br(),shinyBS::bsCollapse(id = paste0("award_collapse_",bi), myCollapsePanel(title=title,header.style="background-color: #DFC463;box-shadow: 2px 2px 2px #888888;",content.ui)))
 
-  armd.parse.as.container(bi=bi,am=ps,args = args, inner.ui=inner.ui,rmd.li = rmd.li,highlight.code = TRUE,is.widget = FALSE,title = NULL, is.hidden = TRUE)  
+  armd.parse.as.container(bi=bi,am=ps,args = args, inner.ui=inner.ui,rmd = rmd,highlight.code = TRUE,is.widget = FALSE,title = NULL, is.hidden = TRUE)  
 }
 

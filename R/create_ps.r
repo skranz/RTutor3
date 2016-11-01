@@ -1,6 +1,6 @@
 examples.create.ps = function() {
   restore.point.options(display.restore.point = TRUE)
-  
+
   setwd("D:/libraries/RTutor3/")
   file = "ex1.Rmd"
   ps = create.ps(file=file)
@@ -12,7 +12,7 @@ examples.create.ps = function() {
   txt = readLines("RTutorEnvironmentalRegulations_sol.Rmd")
   setwd("D:/libraries/RTutor2/examples/examples")
   txt = readLines("Example2_sol.Rmd")
-  
+
   #setwd("D:/libraries/RTutor2/examples/auction")
   #txt = readLines("auction_sol.Rmd")
   popts=default.ps.opts(
@@ -24,10 +24,10 @@ examples.create.ps = function() {
   ps = create.ps(txt,catch.errors = FALSE, priority.opts=popts, ps.type="rmd")
 
   write.ps.rmd(ps)
-  
+
   bdf = ps$bdf
   rmc = ps$rmc
-  
+
   restore.point.options(display.restore.point = !TRUE)
 
   app = rtutorApp(ps)
@@ -40,7 +40,7 @@ create.ps = function(...) {
   library(armd)
   am = parse.armd(..., rtutor=TRUE)
   restore.point("create.ps")
-  
+
   ps = armd.to.ps(am)
 }
 
@@ -61,11 +61,11 @@ create.ps = function(...) {
 armd.to.ps = function(am,dir=getwd(), figure.dir=paste0(dir,"/",figure.sub.dir), figure.sub.dir = "figure", figure.web.dir = "figure", filter.line=NULL, filter.type="auto", check.old.rtutor.sol=TRUE, plugins=am$opts$plugins, ...) {
   restore.point("armd.to.ps")
   library(armd)
-  
+
   ps = am
   set.rt.opts(ps$opts)
   set.ps(ps)
-  
+
   ps$is.initialized=FALSE
   ps$version = 0.1
   ps$figure.web.dir = figure.web.dir
@@ -84,9 +84,9 @@ armd.to.ps = function(am,dir=getwd(), figure.dir=paste0(dir,"/",figure.sub.dir),
   # corresponding user chunks in uk
   create.ps.tasks(ps=ps)
   create.ps.rmc(ps=ps)
-  
+
   ps$navbar.ui = rtutor.navbar(ps=ps, nav.levels = ps$opts$nav.levels)
-  
+
   ps$ui = make.rtutor.ui(ps=ps)
 
   remove.existing.ups(ps.name=ps$ps.name, dir=dir)
@@ -97,13 +97,13 @@ armd.to.ps = function(am,dir=getwd(), figure.dir=paste0(dir,"/",figure.sub.dir),
   # copy into global env for convenience
   copy.into.env(ps$pre.env,dest = .GlobalEnv)
   copy.into.env(ps$env,dest = .GlobalEnv)
-  
+
   ps
 }
 
 write.rps = function(ps, file.name=paste0(dir,"/",ps$ps.name,".rps"), dir=getwd()) {
   restore.point("write.rps")
-  
+
   suppressWarnings(saveRDS(ps, file.name))
 }
 
@@ -115,9 +115,9 @@ read.rps = function(file.name=paste0(dir,"/",ps.name,".rps"), dir=getwd(), ps.na
 rtutor.preparse.block = function(bi,ps, opts = ps$opts) {
   restore.point("rtutor.preparse.block")
   type = ps$bdf$type[[bi]]
-  
+
   if (type %in% c(opts$new.task.line.parts,opts$nested.task.line.parts)) {
-    set.task.line(bi=bi,ps=ps, opts=opts)    
+    set.task.line(bi=bi,ps=ps, opts=opts)
   }
 }
 
@@ -125,24 +125,24 @@ rtutor.parse.chunk = function(bi,ps, opts=ps$opts) {
   restore.point("rtutor.parse.chunk")
   bdf = ps$bdf; br = bdf[bi,]; str = ps$txt[br$start:br$end]
   args = parse.chunk.args(header = str[1])
-  
+
   if (!is.null(args$label))
-    ps$bdf$name[bi] = args$label 
-  
+    ps$bdf$name[bi] = args$label
+
   chunk.precompute = br$parent_precompute >0 | isTRUE(args$precompute) | opts$chunk.preknit
-  
+
   chunk.preknit = isTRUE(args$preknit) | br$parent_info | br$parent_preknit | opts$chunk.preknit
   chunk.task = isTRUE(args$task_chunk) | (!chunk.preknit & !chunk.precompute)
-  
+
   code = str[-c(1,length(str))]
-  mstr = merge.lines(str) 
+  mstr = merge.lines(str)
   if (chunk.precompute) {
     restore.point("parse.precompute.chunk")
     ps$bdf$stype[[bi]] = "precompute_chunk"
     expr = parse(text=code)
     res = eval(expr,ps$pre.env)
     ps$bdf$obj[[bi]]$pre.env = copy.env(ps$pre.env)
-    ps$bdf[bi,c("shown.rmd","sol.rmd","out.rmd")] = mstr
+    armd.set.rmd(bi=bi, am=ps, rmd=mstr)
   }
   if (chunk.preknit) {
     restore.point("parse.preknit.chunk")
@@ -152,7 +152,7 @@ rtutor.parse.chunk = function(bi,ps, opts=ps$opts) {
     ui = knit.rmd(rmd,envir = ps$pre.env,out.type="shiny")
     #ui = tagList(ui, highlight.code.script())
     set.bdf.ui(ui, bi,ps)
-    ps$bdf[bi,c("shown.rmd","sol.rmd","out.rmd")] = mstr
+    armd.set.rmd(bi=bi, am=ps, rmd=mstr)
   }
   if (!chunk.task) {
     ps$bdf$is.widget[[bi]]= FALSE
@@ -168,19 +168,19 @@ rtutor.parse.chunk = function(bi,ps, opts=ps$opts) {
 armd.parse.preknit = function(bi,ps) {
   restore.point("rtutor.parse.preknit")
   bdf = ps$bdf; br = bdf[bi,];
-  
+
   # new code: children are knitted
-  children = bdf$parent == bi 
+  children = bdf$parent == bi
   res = get.children.and.fragments.ui.list(bi,ps, keep.null=FALSE, children=children)
   ui.li = res$ui.li
   set.bdf.ui(ui.li,bi,ps)
-  set.bdf.rmd(bi=bi,ps = ps,res$shown.rmd,res$sol.rmd,res$out.rmd)
+  armd.set.rmd(bi=bi, am=ps, rmd=res$rmd)
   return()
-  
+
   # old code knit everything
   bdf = ps$bdf; br = bdf[bi,];
   str = ps$txt[(br$start+1):(br$end-1)]
-  
+
   ui = knit.rmd(str,envir = ps$pre.env,out.type="shiny")
   set.bdf.ui(ui,bi,ps)
 }
@@ -200,22 +200,22 @@ armd.parse.solved = function(bi,ps) {
 # for rmarkdown based problem sets only
 create.ps.rmc = function(ps) {
   restore.point("create.ps.rmc")
-  
+
   bi = which(ps$bdf$stype == "task_chunk")
   if (length(bi)==0) return(NULL)
-  
+
   task.ind = match(bi,ps$task.table$bi)
-  
-  shown.code = sapply(ps$bdf$shown.rmd[bi], USE.NAMES=FALSE, function(code) {
-    #restore.point("nhdfdf")
-    txt = sep.lines(code)
+
+  shown.code = sapply(ps$bdf$rmd[bi], USE.NAMES=FALSE, function(rmd) {
+    restore.point("nhdfdf")
+    txt = sep.lines(rmd$shown)
     merge.lines(txt[-c(1,length(txt))])
   })
-  
-  
+
+
   rmc = data_frame(chunk.ind = seq_along(task.ind), bi, task.ind, task.line = ps$task.table$task.line[task.ind], chunk.name = ps$bdf$name[bi], shown.code = shown.code, all.required=vector("list", length(task.ind)))
   ps$rmc = rmc
-  
+
   for (r in seq_len(NROW(rmc))[-1]) {
     ps$rmc$all.required[r] = list(compute.all.required.chunks(r,ps,use.prev.req=TRUE))
   }
@@ -225,11 +225,11 @@ compute.all.required.chunks = function(chunk.ind, ps, use.prev.req=FALSE) {
   restore.point("compute.all.required.chunks")
   if (!use.prev.req) stop("Only implemented with use.prev.req")
   if (chunk.ind == 1) return(NULL)
-  
+
   rmc = ps$rmc
   task.ind = rmc$task.ind[chunk.ind]
   lines = c(rmc$task.line[chunk.ind],ps$task.table$task.in[[task.ind]] )
-  
+
   all.req = unique(unlist(lapply(lines, function(line) {
     chunks = which(rmc$task.line == line & rmc$chunk.ind < chunk.ind)
     if (length(chunks)==0) return(NULL)
@@ -237,7 +237,7 @@ compute.all.required.chunks = function(chunk.ind, ps, use.prev.req=FALSE) {
     return(c(chunk,rmc$all.required[[chunk]]))
   })))
   if (!is.null(all.req)) all.req = sort(all.req)
-  
+
   all.req
 }
 
@@ -272,7 +272,7 @@ name.rmd.chunks = function(rmd.file=NULL, txt=readLines(rmd.file), only.empty.ch
   counter = 1
 
   used.chunk.names = NULL
-    
+
   str = "```{r 'out_chunk_2_1_b', fig.width=5, fig.height=5, eval=FALSE, echo=TRUE}"
   for (i in 1:length(txt)) {
     str = txt[i]
@@ -281,7 +281,7 @@ name.rmd.chunks = function(rmd.file=NULL, txt=readLines(rmd.file), only.empty.ch
     if (str.starts.with(str, "```{r")) {
       if ((!only.empty.chunks) | str.trim(str) == "```{r }" | str.trim(str) == "```{r}") {
         counter.str = ifelse(counter==1,"", paste0(" ",counter))
-        
+
         # preserve chunk options
         if (has.substr(str,"=")) {
           rhs.str = paste0(",",chunk.opt.list.to.string(chunk.opt.string.to.list(str)))
@@ -291,14 +291,14 @@ name.rmd.chunks = function(rmd.file=NULL, txt=readLines(rmd.file), only.empty.ch
         chunk.name = paste0(ex.name,' ',part.name, counter.str)
 
         chunk.name = str.to.valid.chunk.name(str.trim(chunk.name))
-          
+
         if (chunk.name %in% used.chunk.names) {
           str = paste0("I generated the chunk name ", chunk.name, " twice. Make sure that you have unique exercise names and don't duplicate exerice parts like a) b) a).")
           warning(str)
           chunk.name = paste0(chunk.name, "___", sample.int(10000000,1))
         }
         used.chunk.names = c(used.chunk.names, chunk.name)
-        
+
         txt[i] = paste0('```{r "',chunk.name,'"', rhs.str,"}")
       }
       counter = counter+1

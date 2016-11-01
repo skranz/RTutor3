@@ -54,10 +54,9 @@ rtutor.parse.task.chunk  = function(bi,ps,args, opts=ps$opts) {
   tail = ps$txt[br$end]
   shown.rmd = paste0(c(head,ck$shown.txt,tail), collapse="\n")
   sol.rmd = paste0(c(head,ck$sol.txt,tail), collapse="\n")
-  ps$bdf[bi,c("shown.rmd","sol.rmd","out.rmd")] = c(
-    shown.rmd, sol.rmd, sol.rmd  
-  )
-  
+
+  armd.set.rmd(bi=bi, am=ps, rmd = list(rmd=sol.rmd, shown=shown.rmd, sol=sol.rmd))
+
   # add tests and hints
   add.chunk.tests.and.hints(ck)
 

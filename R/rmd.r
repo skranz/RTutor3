@@ -7,7 +7,7 @@ write.ps.rmd = function(ps) {
 # 
 write.sol.rmd = function(ps, file = paste0(ps$ps.name,"_sample_solution.Rmd")) {
   restore.point("write.sol.rmd")
-  rmd = ps$bdf$sol.rmd[1]  
+  rmd = ps$rmd$sol  
   header = ps.sample.sol.header(ps)
   rmd = c(header, rmd)
   rmd = mark_utf8(rmd)
@@ -17,8 +17,7 @@ write.sol.rmd = function(ps, file = paste0(ps$ps.name,"_sample_solution.Rmd")) {
 
 write.out.rmd = function(ps, file = paste0(ps$ps.name,"_output_solution.Rmd")) {
   restore.point("write.output.solution")
-
-  rmd = ps$bdf$out.rmd[1]
+  rmd = ps$rmd$rmd  
   header = out.rmd.header(ps)
   rmd = c(header, rmd)
   rmd = mark_utf8(rmd)
@@ -27,8 +26,8 @@ write.out.rmd = function(ps, file = paste0(ps$ps.name,"_output_solution.Rmd")) {
 
 
 write.shown.rmd = function(ps, file = paste0(ps$ps.name,"_problemset.Rmd")) {
-  restore.point("write.sol.rmd")
-  rmd = ps$bdf$shown.rmd[1]
+  restore.point("write.shown.rmd")
+  rmd = ps$rmd$shown  
   header = ps.rmd.header(ps)
   rmd = c(header, rmd)
   rmd = mark_utf8(rmd)
