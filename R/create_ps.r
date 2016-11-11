@@ -165,32 +165,6 @@ rtutor.parse.chunk = function(bi,ps, opts=ps$opts) {
   }
 }
 
-armd.parse.preknit = function(bi,ps) {
-  restore.point("rtutor.parse.preknit")
-  bdf = ps$bdf; br = bdf[bi,];
-
-  # new code: children are knitted
-  children = bdf$parent == bi
-  res = get.children.and.fragments.ui.list(bi,ps, keep.null=FALSE, children=children)
-  ui.li = res$ui.li
-  set.bdf.ui(ui.li,bi,ps)
-  armd.set.rmd(bi=bi, am=ps, rmd=res$rmd)
-  return()
-
-  # old code knit everything
-  bdf = ps$bdf; br = bdf[bi,];
-  str = ps$txt[(br$start+1):(br$end-1)]
-
-  ui = knit.rmd(str,envir = ps$pre.env,out.type="shiny")
-  set.bdf.ui(ui,bi,ps)
-}
-
-armd.parse.precompute = function(bi,ps) {
-  # all work is done in the chunks inside
-  rtutor.parse.as.container(bi,ps,is.static = TRUE)
-
-}
-
 armd.parse.solved = function(bi,ps) {
   restore.point("rtutor.parse.solved")
   rtutor.parse.as.container(bi,ps)

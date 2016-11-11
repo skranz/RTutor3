@@ -18,7 +18,7 @@ aceHeaders = function() {
   ))
 }
 
-rtutor.slides.ui = function(ps = NULL, add.page=TRUE, start.slide = 1) {
+rtutor.slides.ui = function(ps = NULL, add.page=TRUE, start.slide = first.non.null(ps$start.slide,1)) {
   restore.point("rtutor.slides.ui")
 
   css = if (!is.null(ps$css)) tags$head(tags$style(merge.lines(ps$css))) else NULL

@@ -86,8 +86,8 @@ rtutor.quiz.block.parse = function(inner.txt,type="quiz",name="",id=paste0("addo
 rtutor.quiz.handler = function(qu, part.solved, solved, ts=get.ts(qu$task.ind),app=getApp(),...) {
   restore.point("rtutor.quiz.handler")
 
-  ## TO DO: Need to get ts
-    
+
+      
   ts$solved = solved
   ts$part.solved = part.solved
   ts$points = (sum(part.solved) / length(part.solved))*qu$max.points
@@ -162,27 +162,12 @@ shinyQuiz = function(id=paste0("quiz_",sample.int(10e10,1)),qu=NULL, yaml, block
   if (is.null(qu)) {
     yaml = enc2utf8(yaml)
     
-    yaml = sep.lines(yaml)
-    sep = which(str.trim(yaml)=="---")
-    if (length(sep)>0) {
-      rows = (sep+1):(length(yaml)-1)
-      if (rows[2]<rows[1]) rows = integer()
-      blocks.txt = yaml[rows]
-      yaml = yaml[1:(sep-1)]
-    }
-    yaml = merge.lines(yaml)
-    qu = try(mark_utf8(read.yaml(text=yaml)), silent=TRUE)
-    
-    if (!is.null(blocks.txt) & is.null(qu$bdf)) {
-      qu$bdf = find.rmd.nested(blocks.txt)
-    } else {
-      qu$bdf = NULL
-    }
-    
+    qu = try(mark_utf8(parse.hashdot.yaml(yaml)), silent=TRUE)
     if (is(qu,"try-error")) {
       err = paste0("When importing quiz:\n",paste0(yaml, collapse="\n"),"\n\n",as.character(qu))
       stop(err,call. = FALSE)
     }
+
   }
 
   if (is.null(qu[["id"]])) {
