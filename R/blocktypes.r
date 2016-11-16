@@ -1,7 +1,7 @@
 
 # blocks specified in RTutor
-armd.block.types.df = function(...) {
-  restore.point("armd.block.types.df")
+RTutor3.block.types.df = function(...) {
+  restore.point("RTutor3.block.types.df")
 
   types = c(
     "chunk","quiz","award",

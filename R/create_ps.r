@@ -73,7 +73,7 @@ armd.to.ps = function(am,dir=getwd(), figure.dir=paste0(dir,"/",figure.sub.dir),
   if (!dir.exists(figure.dir)) {
     dir.create(figure.dir)
   }
-  ps$ps.name = am$am.name
+  ps$ps.name = am$name
   ps$ps.id = am$am.id
   ps$dir = dir
   ps$figure.dir = figure.dir

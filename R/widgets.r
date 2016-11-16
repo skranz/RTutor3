@@ -114,7 +114,7 @@ render.rtutor.widgets = function(ps, init.handlers=TRUE,bis = which(ps$bdf$is.wi
   }
 }
 
-render.rtutor.widget = function(ps, bi,  ts=NULL, init.handlers=TRUE, dset=TRUE) {
+render.rtutor.widget = function(ps, bi,  ts=NULL, init.handlers=TRUE, dset=TRUE, opts=ps$opts) {
   restore.point("render.rtutor.widget")
 
   type = ps$bdf$type[[bi]]
@@ -144,7 +144,7 @@ render.rtutor.widget = function(ps, bi,  ts=NULL, init.handlers=TRUE, dset=TRUE)
     dsetUI(output.id, ui)
 
   if (init.handlers)
-    Wid$init.handlers(wid=wid,ts=ts,bi=bi)
+    Wid$init.handlers(wid=wid,ts=ts,bi=bi, opts=opts)
   cat("end render.rtutor.widget")
 }
 
@@ -179,17 +179,7 @@ get.Widget = function(bi=NULL,type=ps$bdf$type[[bi]], ps=get.ps()) {
 
 check.Widget = function(Wid) {
   restore.point("check.Widget")
-  check.Widget.field(c("type"),type="")  
-  type = Wid$type
-  check.Widget.field(c("package","is.task"),type=type)   
-  check.Widget.function("parse.fun",type)
-  if (Wid$is.task) {
-    check.Widget.function(c("init.task.state","init.handlers", "ui.fun"),type)
-    check.Widget.field(c("need.task.env","change.task.env"),type=type) 
-  }
-  
-  
-  
+
 }
 
 check.Widget.function = function(fun.name, type="") {

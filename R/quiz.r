@@ -18,22 +18,13 @@
 
 rtutor.widget.quiz = function() {
   list(
-    package = "RTutor",
-    type = "quiz",
-    mode = "block",
-    need.task.env = FALSE,
-    change.task.env = FALSE,
     is.task = TRUE,
-    use.clicker = TRUE,
-    is.static = FALSE,
     parse.fun = rtutor.quiz.block.parse,
     make.org.task.state = rtutor.quiz.make.org.task.state,
     init.task.state = rtutor.quiz.init.task.state,
     init.handlers = rtutor.quiz.init.handlers,
     ui.fun = rtutor.quiz.shiny.ui,
-    shown.txt.fun = rtutor.quiz.shown.txt.fun,
-    sol.txt.fun = rtutor.quiz.sol.txt.fun,
-    out.txt.fun = rtutor.quiz.sol.txt.fun
+    rmd.fun = rtutor.quiz.rmd
   )
 }
 
@@ -53,13 +44,13 @@ rtutor.quiz.init.task.state = function(ts,ups, task.ind=ts$task.ind,...) {
   ts
 }
 
-
-rtutor.quiz.shown.txt.fun = function(ts,solved=FALSE,...) {
-  quiz.md(ts$wid,solution = solved)
-} 
-
-rtutor.quiz.sol.txt.fun = function(ts,solved=TRUE,...) {
-  quiz.md(ts$wid,solution = solved)
+rtutor.quiz.rmd = function(ts, ...) {
+  sol.md = quiz.md(ts$wid, solution=TRUE)
+  list(
+    "rmd" =sol.md,
+    "sol" = sol.md,
+    "shown" = quiz.md(ts$wid, solution=FALSE)  
+  )
 }
 
 rtutor.quiz.shiny.ui = function(ts, wid=ts$wid, ...) {
@@ -156,7 +147,7 @@ quizDefaults = function(lang="en") {
 #' @param quiz.handler a function that will be called if the quiz is checked.
 #'        The boolean argument solved is TRUE if the quiz was solved
 #'        and otherwise FALSE
-shinyQuiz = function(id=paste0("quiz_",sample.int(10e10,1)),qu=NULL, yaml, blocks.txt=NULL, bdf=NULL, quiz.handler=NULL, add.handler=TRUE, defaults=quizDefaults(lang=lang), lang="en", whiskers=NULL) {
+shinyQuiz = function(id=paste0("quiz_",sample.int(10e10,1)),qu=NULL, yaml, blocks.txt=NULL, bdf=NULL, quiz.handler=NULL, add.handler=TRUE, defaults=quizDefaults(lang=lang), lang="en", whiskers=NULL,add.check.btn=TRUE) {
   restore.point("shinyQuiz")
 
   if (is.null(qu)) {
@@ -179,19 +170,19 @@ shinyQuiz = function(id=paste0("quiz_",sample.int(10e10,1)),qu=NULL, yaml, block
 
 
   qu$checkBtnId = paste0(qu$id,"__checkBtn")
-  qu$parts = lapply(seq_along(qu$parts), function(ind) init.quiz.part(qu$parts[[ind]],ind,qu,whiskers=whiskers))
+  qu$parts = lapply(seq_along(qu$parts), function(ind) init.quiz.part(qu$parts[[ind]],ind,qu,whiskers=whiskers,add.check.btn=add.check.btn))
   np = length(qu$parts)
   
   qu$max.points = sum(sapply(qu$parts, function(part) part[["points"]]))
   
-  qu$ui = quiz.ui(qu)
+  qu$ui = quiz.ui(qu, add.check.btn=add.check.btn)
 
   if (add.handler)
     add.quiz.handlers(qu, quiz.handler)
   qu
 }
 
-init.quiz.part = function(part=qu$parts[[part.ind]], part.ind=1, qu, defaults=quizDefaults(), whiskers=list()) {
+init.quiz.part = function(part=qu$parts[[part.ind]], part.ind=1, qu, defaults=quizDefaults(), whiskers=list(), add.check.btn=TRUE) {
   restore.point("init.quiz.part")
 
   part = copy.into.missing.fields(dest=part, source=defaults)
@@ -258,7 +249,7 @@ init.quiz.part = function(part=qu$parts[[part.ind]], part.ind=1, qu, defaults=qu
   part$id = paste0(qu$id,"__part", part.ind)
   part$answerId = paste0(part$id,"__answer")
   part$resultId = paste0(part$id,"__resultUI")
-  part$ui = quiz.part.ui(part)
+  part$ui = quiz.part.ui(part,add.button = add.check.btn & !is.null(part$checkBtnId))
   part$solved = FALSE
 
   if (is.null(part$points)) {
@@ -268,7 +259,7 @@ init.quiz.part = function(part=qu$parts[[part.ind]], part.ind=1, qu, defaults=qu
   part
 }
 
-quiz.ui = function(qu, solution=FALSE) {
+quiz.ui = function(qu, solution=FALSE, add.check.btn=TRUE) {
   restore.point("quiz.ui")
   pli = lapply(seq_along(qu$parts), function(i) {
     restore.point("quiz.ui.inner")
@@ -291,7 +282,7 @@ quiz.ui = function(qu, solution=FALSE) {
       return(list(part$ui,hr))
     }
   })
-  if (!is.null(qu$checkBtnId)) {
+  if (!is.null(qu$checkBtnId) & add.check.btn) {
     ids = sapply(qu$parts, function(part) part$answerId)
     pli = c(pli, list(submitButton(qu$checkBtnId,label = "check",form.ids = ids),br()))
   }
