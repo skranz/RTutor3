@@ -43,17 +43,11 @@ init.ps.session = function(ps, user.name, nick=user.name, app=getApp(), rendered
     call.plugin.handler("init.handler",plugin=plugin)
   }
   call.plugin.handler("activate.handler",plugin=ps$active.plugin)
-
-  if (isTRUE(ps$opts$use.clicker)) {
-    init.ps.clicker(ps=ps, opts=ps$opts)
-  }
-  
-  
   ps
 }
 
 # general initialisation independent of app type
-initRTutorApp = function(ps, catch.errors = TRUE, offline=FALSE, use.mathjax = !offline, opts=list(), dir=getwd(), figure.dir = paste0(dir,"/", ps$figure.sub.dir), ups.dir=dir, use.clicker=first.non.null(ps$opts$use.clicker,FALSE), clicker.dir=ps$opts$clicker.dir, ...) {
+initRTutorApp = function(ps, catch.errors = TRUE, offline=FALSE, use.mathjax = !offline, opts=list(), dir=getwd(), figure.dir = paste0(dir,"/", ps$figure.sub.dir), ups.dir=dir, ...) {
   restore.point("initRTutorApp")
 
   app = eventsApp()
@@ -67,6 +61,9 @@ initRTutorApp = function(ps, catch.errors = TRUE, offline=FALSE, use.mathjax = !
   
   ps$opts[names(opts)] = opts
   
+  
+  ps$opts$use.clicker = first.non.null(ps$opts$use.clicker, nchar(ps$opts$clicker.dir)>0 & nchar(ps$opts$course.id)>0)
+  
   app$ps = ps
   ps$dir = dir
   ps$ups.dir = ups.dir
@@ -75,10 +72,6 @@ initRTutorApp = function(ps, catch.errors = TRUE, offline=FALSE, use.mathjax = !
   ps$is.shiny = TRUE
   ps$opts$is.shiny=TRUE
   ps$opts$catch.errors = catch.errors
-  
-  ps$opts$clicker.dir = clicker.dir
-  ps$opts$use.clicker = use.clicker
- 
   ps$given.awards.bi = NULL
   
   load.ps.libs(ps$opts$libs)
@@ -96,7 +89,7 @@ initRTutorApp = function(ps, catch.errors = TRUE, offline=FALSE, use.mathjax = !
   app
 }
 
-slidesApp = function(ps,user.name = "John Doe", nick=user.name, start.slide=first.non.null(ps$start.slide,1), dir=getwd(), ups.dir=dir, offline=FALSE, just.return.html=FALSE, catch.errors = TRUE, margin=2, opts=list(), use.clicker=first.non.null(ps$use.clicker,!is.null(clicker.dir)), clicker.dir = ps[["clicker.dir"]]) {
+slidesApp = function(ps,user.name = "John Doe", nick=user.name, start.slide=first.non.null(ps$start.slide,1), dir=getwd(), ups.dir=dir, offline=FALSE, just.return.html=FALSE, catch.errors = TRUE, margin=2, opts=list()) {
   restore.point("slidesApp")
   
   app = initRTutorApp(ps=ps, catch.errors = catch.errors,offline = offline, dir=dir, ups.dir=ups.dir, opts=opts)
@@ -241,10 +234,6 @@ rtutor.navigate.btns = function() {
   btns
 }
 
-smallButton = function(id,label, icon=NULL, size="extra-small", extra.class=id) {
-  class = paste0(c(extra.class,"btn btn-default action-button btn-xs shiny-bound-input"), collapse=" ")
-  tags$button(id=id, type="button", class=class, label)
-}
 
 add.slide.navigate.handlers = function() {
   restore.point("add.slide.navigate.handlers")

@@ -66,6 +66,8 @@ default.ps.opts = function(
   block.packages = c("RTutor3","armd"),  
   name = "ps",
   id = "ps",
+  
+  clicker.stop.in = 5,
   ...
 ) {
   args = c(as.list(environment()),list(...))
