@@ -67,6 +67,7 @@ default.ps.opts = function(
   name = "ps",
   id = "ps",
   
+  use.clicker = FALSE,
   clicker.stop.in = 5,
   ...
 ) {

@@ -21,6 +21,7 @@ render.first.widgets = function(ps,n=2) {
 }
 
 
+
 rtutor.parse.widget = function(bi, ps, opts=ps$opts) {
   restore.point("rtutor.parse.widget")
   
@@ -41,35 +42,62 @@ rtutor.parse.widget = function(bi, ps, opts=ps$opts) {
   
   args = parse.block.args(arg.str = br$arg.str)
   if (!is.null(args$name)) ps$bdf$name[[bi]] = args$name
-  wid = Wid$parse.fun(
-    block.txt = ps$txt[br$start:br$end],
-    inner.txt = ps$txt[(br$start+1):(br$end-1)],
-    id = paste0(type,"__",bi),
-    args = args,
-    type = type,
-    bdf=bdf,
-    bi = bi,
-    ps = ps
-  )
-  if (!is.null(Wid$ui.fun)) {
-    # the widget will be put inside a container
+  
+  use.clicker = !is.null(Wid[["clicker"]]) & isTRUE(opts$use.clicker) & !is.null(opts[["courseid"]]) & !is.null(opts[["clicker.dir"]])
+  
+  if (use.clicker) {
+    library(RTutorClicker)
+    wid = call.fun(Wid$clicker$parse.fun,
+      block.txt = ps$txt[br$start:br$end],
+      inner.txt = ps$txt[(br$start+1):(br$end-1)],
+      id = paste0(type,"__",bi),
+      args = args,
+      type = type,
+      bdf=bdf,
+      bi = bi,
+      ps = ps
+    )
+    wid$type = type
+    wid$use.clicker = TRUE
+    wid$task.id = wid$id
+    
     ps$bdf$is.container[[bi]] = TRUE
     set.container.div.and.output(bi,ps)
-  }
-
-  if (isTRUE(Wid$is.task)) {
-    ps$bdf$is.task[[bi]] = Wid$is.task
-    wid$task.ind = sum(ps$bdf$is.task[1:bi])
+  } else {
+    wid = Wid$parse.fun(
+      block.txt = ps$txt[br$start:br$end],
+      inner.txt = ps$txt[(br$start+1):(br$end-1)],
+      id = paste0(type,"__",bi),
+      args = args,
+      type = type,
+      bdf=bdf,
+      bi = bi,
+      ps = ps
+    )
+    wid$type = type
+    wid$use.clicker = FALSE
+    wid$task.id = wid$id
     
-    create.bi.task.env.info(bi=bi,ps=ps,need.task.env = isTRUE(Wid$need.task.env),change.task.env = isTRUE(Wid$change.task.env),args=list(optional = TRUE),presolve.task = opts$presolve, opts=opts)  
-
+    if (!is.null(Wid$ui.fun)) {
+      # the widget will be put inside a container
+      ps$bdf$is.container[[bi]] = TRUE
+      set.container.div.and.output(bi,ps)
+    }
+  
+    if (isTRUE(Wid$is.task)) {
+      ps$bdf$is.task[[bi]] = Wid$is.task
+      wid$task.ind = sum(ps$bdf$is.task[1:bi])
+      
+      create.bi.task.env.info(bi=bi,ps=ps,need.task.env = isTRUE(Wid$need.task.env),change.task.env = isTRUE(Wid$change.task.env),args=list(optional = TRUE),presolve.task = opts$presolve, opts=opts)  
+  
+    }
   }
+  
   ps$bdf$obj[[bi]] = list(wid=wid)
   
   
   return()
 }
-
 
 
 # will be called from parse.armd
@@ -130,21 +158,38 @@ render.rtutor.widget = function(ps, bi,  ts=NULL, init.handlers=TRUE, dset=TRUE,
   cat("\n******************************************")
   cat("\nrender.rtutor.widget")
 
-  if (is.null(ts))
-    ts = get.ts(bi=bi)
-  
-
-  wid = ts$wid
+  wid = ps$bdf$obj[[bi]]$wid
   type = ps$bdf$type[[bi]]
   Wid = ps$Widgets[[type]]
-  ui = Wid$ui.fun(ts=ts)
+  
   output.id = ps$bdf$output.id[[bi]]  
-  setUI(output.id, ui)
-  if (dset)
-    dsetUI(output.id, ui)
-
-  if (init.handlers)
-    Wid$init.handlers(wid=wid,ts=ts,bi=bi, opts=opts)
+  
+  use.clicker = isTRUE(wid$use.clicker)
+  
+  # render clicker widget
+  if (use.clicker) {
+    library(RTutorClicker)
+    ui = clicker.server.ui.fun(wid=wid, Wid=Wid)
+    setUI(output.id, ui)
+    if (dset)
+      dsetUI(output.id, ui)
+    
+    if (init.handlers)
+      clicker.server.init.handlers(wid=wid, Wid=Wid)
+    
+  } else {
+    if (is.null(ts))
+      ts = get.ts(bi=bi)
+    ui = Wid$ui.fun(ts=ts)
+    
+    setUI(output.id, ui)
+    if (dset)
+      dsetUI(output.id, ui)
+  
+    if (init.handlers)
+      Wid$init.handlers(wid=wid,ts=ts,bi=bi, opts=opts)
+  }
+  
   cat("end render.rtutor.widget")
 }
 
@@ -173,7 +218,7 @@ make.widgets.list = function(widgets="quiz") {
   li
 }
 
-get.Widget = function(bi=NULL,type=ps$bdf$type[[bi]], ps=get.ps()) {
+get.Widget = function(type=ps$bdf$type[[bi]],bi=NULL, ps=get.ps()) {
   ps$Widgets[[type]]
 }
 

@@ -18,6 +18,7 @@
 
 rtutor.widget.quiz = function() {
   list(
+    clicker = rtutor.clicker.widget.quiz(),
     is.task = TRUE,
     parse.fun = rtutor.quiz.block.parse,
     make.org.task.state = rtutor.quiz.make.org.task.state,
@@ -171,6 +172,11 @@ shinyQuiz = function(id=paste0("quiz_",sample.int(10e10,1)),qu=NULL, yaml, block
 
   qu$checkBtnId = paste0(qu$id,"__checkBtn")
   qu$parts = lapply(seq_along(qu$parts), function(ind) init.quiz.part(qu$parts[[ind]],ind,qu,whiskers=whiskers,add.check.btn=add.check.btn))
+  
+  if (!is.null(qu$explain))
+    qu$explain.html = md2html(qu$explain)
+  
+  
   np = length(qu$parts)
   
   qu$max.points = sum(sapply(qu$parts, function(part) part[["points"]]))
@@ -231,6 +237,8 @@ init.quiz.part = function(part=qu$parts[[part.ind]], part.ind=1, qu, defaults=qu
   }
   part$question = md2html(replace.whiskers(part$question,values=whiskers))
 
+  if (!is.null(part$explain))
+    part$success = paste0(part$success,"\n\n", part$explain)
   
   txt = replace.whiskers(part$success,whiskers)
   
@@ -242,8 +250,14 @@ init.quiz.part = function(part=qu$parts[[part.ind]], part.ind=1, qu, defaults=qu
   txt = colored.html(txt, part$success_color)
   part$success =  md2html(text=txt, fragment.only=TRUE)
 
+  if (!is.null(part$explain))
+    part$failure = paste0(part$failure,"\n\n", part$explain)
+
+  
   txt = replace.whiskers(part$failure, whiskers)
   txt = colored.html(txt, part$failure_color)
+  
+  
   part$failure =  md2html(text=txt, fragment.only=TRUE)
 
   part$id = paste0(qu$id,"__part", part.ind)
